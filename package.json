@@ -1,13 +1,13 @@
 {
-  "name": "node-server",
+  "name": "investing",
   "version": "1.0.0",
-  "description": "seed project",
-  "main": "index.js",
+  "description": "Project to play with node, express and other libraries in order to learn and build an Investing App API to manage my investiments",
+  "main": "server.js",
   "watch": {
     "test": "{src,test}/**/*.js"
   },
   "scripts": {
-    "start": "./node_modules/.bin/nodemon index.js",
+    "start": "./node_modules/.bin/nodemon server.js",
     "test": "./node_modules/.bin/istanbul cover ./node_modules/mocha/bin/_mocha -- -R spec --recursive ./test",
     "watch": "npm-watch"
   },
