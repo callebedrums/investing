@@ -1,24 +1,41 @@
 
-var PromiseMock = function (callback) {
+var PromiseMock = function PromiseMock(callback) {
     var self = this;
 
+    var cb, err_cb, status;
+
+    status = 'pending';
+
     var resolve = function (data) {
-        if (self.cb instanceof Function) self.cb(data);
+        status = 'resolved';
+        if (cb instanceof Function) cb(data);
     };
 
     var reject = function (data) {
-        if (self.err_cb instanceof Function) self.err_cb(data);
+        status = 'rejected';
+        if (err_cb instanceof Function) err_cb(data);
+    };
+
+    this.then = function (_cb, _err_cb) {
+        cb = _cb;
+        err_cb = _err_cb;
+
+        if (status === 'resolved') resolve();
+
+        if (status === 'rejected') reject();
+
+        return this;
+    };
+
+    this.catch = function (_err_cb) {
+        err_cb = _err_cb;
+
+        if (status === 'rejected') reject();
+
+        return this;
     };
 
     callback(resolve, reject);
-};
-
-PromiseMock.prototype.then = function (cb, err_cb) {
-    this.cb = cb;
-    this.err_cb = err_cb;
-};
-PromiseMock.prototype.catch = function (err_cb) {
-    this.err_cb = err_cb;
 };
 
 module.exports = PromiseMock

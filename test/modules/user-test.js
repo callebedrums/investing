@@ -138,6 +138,42 @@ describe('Users Model test suite', function () {
             expect(spy.withArgs('err').calledOnce).to.be.true;
         });
 
+        it('should create a new User instance and save it', function () {
+            var pwdResolve;
+            var pwdStub = sinon.stub(User.prototype, 'setPassword').returns({
+                then: function (cb) { pwdResolve = cb; return this; },
+                catch: function () { return this; }
+            });
+
+            var saveResolve;
+            var saveStub = sinon.stub(User.prototype, 'save').returns({
+                then: function (cb) { saveResolve = cb; return this;},
+                catch: function () { return this; }
+            });
+
+            var user;
+            var spy = sinon.spy(function (__user) {
+                user = __user;
+            });
+
+            var promise = User.save(_user);
+
+            expect(promise).to.be.instanceof(PromiseMock);
+
+            promise.then(spy);
+
+            pwdResolve();
+            saveResolve();
+
+            expect(pwdStub.calledOnce).to.be.true;
+            expect(saveStub.calledOnce).to.be.true;
+
+            expect(spy.calledOnce).to.be.true;
+            expect(user).to.be.instanceof(User);
+
+            pwdStub.restore();
+            saveStub.restore();
+        });
     });
 
     describe('Password managing', function () {
@@ -146,29 +182,55 @@ describe('Users Model test suite', function () {
             sinon.stub(bcrypt, 'genSalt', function (rounds, _cb) {
                 _cb(null, 'salt');
             });
+
+            var resolve;
             sinon.stub(bcrypt, 'hash', function (pw, salt, _cb) {
-                _cb(null, 'encrypted');
+                resolve = function () {
+                    _cb(null, 'encrypted');
+                };
             });
 
             var user = new User();
+            var spy = sinon.spy();
 
-            user.setPassword('abc');
+            var promise = user.setPassword('abc');
+
+            expect(promise).to.be.instanceof(PromiseMock);
+
+            promise.then(spy);
+            resolve();
 
             expect(user.data.password).to.equal('encrypted');
+            expect(spy.calledOnce).to.be.true;
 
             bcrypt.genSalt.restore();
             bcrypt.hash.restore();
         });
 
+        it('should fail if password is invalid', function () {
+            var spy = sinon.spy();
+            var user = new User();
+
+            user.setPassword('').catch(spy);
+
+            expect(spy.calledOnce).to.be.true;
+        });
+
         it('should fail generating salt to encrypt password', function () {
+
+            var resolve;
             sinon.stub(bcrypt, 'genSalt', function (rounds, _cb) {
-                _cb('err');
+                resolve = function () {
+                    _cb('err');
+                };
             });
 
             var spy = sinon.spy();
             var user = new User();
 
-            user.setPassword('abc', spy);
+            user.setPassword('abc').catch(spy);
+
+            resolve();
 
             expect(user.data.password).to.be.undefined;
             expect(spy.withArgs('err').calledOnce).to.be.true;
@@ -180,14 +242,20 @@ describe('Users Model test suite', function () {
             sinon.stub(bcrypt, 'genSalt', function (rounds, _cb) {
                 _cb(null, 'salt');
             });
+
+            var resolve;
             sinon.stub(bcrypt, 'hash', function (pw, salt, _cb) {
-                _cb('err');
+                resolve = function () {
+                    _cb('err');
+                };
             });
 
             var spy = sinon.spy();
             var user = new User({password:'aabbcc'});
 
-            user.setPassword('abc', spy);
+            user.setPassword('abc').catch(spy);
+
+            resolve();
 
             expect(user.data.password).to.equal('aabbcc');
             expect(spy.withArgs('err').calledOnce).to.be.true;
@@ -196,18 +264,42 @@ describe('Users Model test suite', function () {
             bcrypt.hash.restore();
         });
 
-        it('sould compare passwords', function () {
+        it('sould compare passwords successfuly', function () {
+            var resolve;
             sinon.stub(bcrypt, 'compare', function (pwd, enctrypted, _cb) {
-                _cb(null, true);
+                resolve = function () {
+                    _cb(null, true);
+                };
             })
 
             var spy = sinon.spy();
             var user = new User({password: 'aabbcc'});
 
-            user.comparePassword('aabbcc');
-            user.comparePassword('aabbcc', spy);
+            user.comparePassword('aabbcc').then(spy);
 
-            expect(spy.withArgs(null, true).calledOnce).to.be.true;
+            resolve();
+
+            expect(spy.calledOnce).to.be.true;
+
+            bcrypt.compare.restore();
+        });
+
+        it('should fail comparring passwords', function () {
+            var resolve;
+            sinon.stub(bcrypt, 'compare', function (pwd, enctrypted, _cb) {
+                resolve = function () {
+                    _cb('err');
+                };
+            })
+
+            var spy = sinon.spy();
+            var user = new User({password: 'aabbcc'});
+
+            user.comparePassword('aabbccde').catch(spy);
+
+            resolve();
+
+            expect(spy.withArgs('err').calledOnce).to.be.true;
 
             bcrypt.compare.restore();
         });

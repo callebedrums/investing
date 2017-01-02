@@ -11,8 +11,6 @@ module.exports = function () {
                 if (!req.body.password || typeof req.body.password !== 'string') {
                     res.status(400).json({message: 'password not provided or invalid'});
                 }
-
-                // save user
             }
         },
         "/users/:id": {

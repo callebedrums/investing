@@ -49,29 +49,58 @@ module.exports = function (Promise, db) {
         return this.$promise;
     };
 
-    User.prototype.setPassword = function (password, callback) {
-        var user = this;
-        callback = (typeof callback === 'function') ? callback : function () {};
+    User.save = function (data) {
+        var user = new User(data);
 
-        bcrypt.genSalt(10, function (err, salt) {
-            if (err) {
-                callback(err);
+        return new Promise(function (resolve, reject) {
+            user.setPassword(data.password)
+            .then(function () {
+                user.save()
+                .then(function () {
+                    resolve(user);
+                })
+                .catch(reject);
+            })
+            .catch(reject);
+        });
+    };
+
+    User.prototype.setPassword = function (password) {
+        var user = this;
+
+        return new Promise(function (resolve, reject) {
+            if (!password) {
+                reject('invalid password');
             } else {
-                bcrypt.hash(password, salt, function (err, hash) {
-                    if (!err) {
-                        user.data.password = hash;
+                bcrypt.genSalt(10, function (err, salt) {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        bcrypt.hash(password, salt, function (err, hash) {
+                            if (!err) {
+                                user.data.password = hash;
+                                resolve();
+                            } else {
+                                reject(err);   
+                            }
+                        });
                     }
-                    callback(err);
                 });
             }
         });
     };
 
-    User.prototype.comparePassword = function (password, callback) {
-        callback = (typeof callback === 'function') ? callback : function () {};
+    User.prototype.comparePassword = function (password) {
+        var user = this;
 
-        bcrypt.compare(password, this.data.password, function (err, result) {
-            callback(err, result);
+        return new Promise(function (resolve, reject) {
+            bcrypt.compare(password, user.data.password, function (err, result) {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve()
+                }
+            });            
         });
     };
 
