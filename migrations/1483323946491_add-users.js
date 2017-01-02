@@ -4,7 +4,10 @@ exports.up = function(pgm) {
             type: 'serial',
             primaryKey: true
         },
-        'username': 'character varying(64)',
+        'username': {
+            type: 'character varying(64)',
+            unique: true
+        },
         'password': 'character varying(256)',
         'data': 'jsonb'
     });

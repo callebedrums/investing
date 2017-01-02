@@ -8,7 +8,9 @@ var cors        = require('cors');
 var app = express();
 var port = process.env.PORT || 8080;
 
-app.set('superSecret', 'secretusedtogeneratethejwt');
+var config = require('./config');
+
+app.set('secret', config.secret);
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -28,7 +30,7 @@ router.post('/authenticate', function (req, res) {
         var token = jwt.sign({
             id: 1,
             username: 'chewbacca'
-        }, app.get('superSecret'), {
+        }, app.get('secret'), {
             expiresIn: 24 * 60 * 60  // expires in 24 hours
         });
 

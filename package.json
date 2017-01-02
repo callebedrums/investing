@@ -9,7 +9,8 @@
   "scripts": {
     "start": "./node_modules/.bin/nodemon server.js",
     "test": "./node_modules/.bin/istanbul cover ./node_modules/mocha/bin/_mocha -- -R spec --recursive ./test",
-    "watch": "npm-watch"
+    "watch": "npm-watch",
+    "migrate": "node_modules/.bin/pg-migrate up"
   },
   "author": "",
   "license": "ISC",
@@ -22,10 +23,12 @@
     "sinon": "^1.17.6"
   },
   "dependencies": {
+    "bcrypt-nodejs": "0.0.3",
     "body-parser": "^1.15.2",
     "cors": "^2.8.1",
     "express": "^4.14.0",
     "jsonwebtoken": "^7.2.1",
+    "lodash": "^4.17.4",
     "massive": "^2.5.0",
     "morgan": "^1.7.0",
     "node-pg-migrate": "0.0.10",
