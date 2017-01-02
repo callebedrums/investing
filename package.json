@@ -26,6 +26,9 @@
     "cors": "^2.8.1",
     "express": "^4.14.0",
     "jsonwebtoken": "^7.2.1",
-    "morgan": "^1.7.0"
+    "massive": "^2.5.0",
+    "morgan": "^1.7.0",
+    "node-pg-migrate": "0.0.10",
+    "pg": "^6.1.2"
   }
 }
