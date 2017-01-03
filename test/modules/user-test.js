@@ -176,6 +176,133 @@ describe('Users Model test suite', function () {
         });
     });
 
+    describe('Loading User', function () {
+
+        it('should load user', function () {
+            var resolve;
+            dbMock.find = function (id, cb) {
+                resolve = function () {
+                    cb(null, {
+                        id: id,
+                        username: 'callebe'
+                    });
+                };
+            };
+
+            var user = new User({id: 1});
+            var spy = sinon.spy();
+
+            var promise = user.load();
+            expect(promise).to.not.be.undefined;
+            expect(promise).to.be.instanceof(PromiseMock);
+            expect(promise).to.equal(user.$promise);
+
+            promise.then(spy);
+            resolve();
+
+            expect(spy.withArgs(user).calledOnce).to.be.true;
+            expect(user.data.id).to.equal(1);
+            expect(user.data.username).to.equal('callebe');
+
+            expect(user.$promise).to.be.undefined;
+        });
+
+        it('should fail loading user', function () {
+            var resolve;
+            dbMock.find = function (id, cb) {
+                resolve = function () {
+                    cb('err');
+                };
+            };
+
+            var user = new User({id: 1});
+            var spy = sinon.spy();
+
+            user.load().catch(spy);
+
+            resolve();
+
+            expect(spy.withArgs('err').calledOnce).to.be.true;
+
+            expect(user.$promise).to.be.undefined;
+        });
+
+        it('should create a new User instance and load it', function () {
+            var loadResolve;
+            var loadStub = sinon.stub(User.prototype, 'load').returns({
+                then: function (cb) { loadResolve = cb; return this;},
+                catch: function () { return this; }
+            });
+
+            var user;
+            var spy = sinon.spy(function (__user) {
+                user = __user;
+            });
+
+            var promise = User.load(1);
+
+            expect(promise).to.be.instanceof(PromiseMock);
+
+            promise.then(spy);
+
+            loadResolve();
+
+            expect(loadStub.calledOnce).to.be.true;
+
+            expect(spy.calledOnce).to.be.true;
+            expect(user).to.be.instanceof(User);
+
+            loadStub.restore();
+        });
+    });
+
+    describe('Destroing User', function () {
+
+        it('should remove the user from database', function () {
+            var user = new User({id:1});
+
+            var data;
+            var resolve;
+            dbMock.destroy = function (_data, cb) {
+                data = _data;
+                resolve = function () {
+                    cb(null);
+                };
+            };
+
+            var spy = sinon.spy();
+
+            var promise = user.destroy();
+            expect(promise).to.be.instanceof(PromiseMock);
+            promise.then(spy);
+
+            resolve();
+
+            expect(data).to.eql({id:1});
+            expect(spy.calledOnce).to.be.true;
+        });
+
+        it('should fail when removing user', function () {
+            var user = new User({id:1});
+
+            var data;
+            var resolve;
+            dbMock.destroy = function (_data, cb) {
+                data = _data;
+                resolve = function () {
+                    cb('err');
+                };
+            };
+
+            var spy = sinon.spy();
+
+            user.destroy().catch(spy);
+
+            resolve();
+            expect(spy.withArgs('err').calledOnce).to.be.true;
+        });
+    });
+
     describe('Password managing', function () {
 
         it('should encrypt the password', function () {
@@ -302,6 +429,50 @@ describe('Users Model test suite', function () {
             expect(spy.withArgs('err').calledOnce).to.be.true;
 
             bcrypt.compare.restore();
+        });
+
+        it('should update the password', function () {
+            var user = new User({ id: 1, password: 'abcd', username: 'callebe' });
+
+            var resolve;
+            var _data;
+            dbMock.save = function (data, cb) {
+                _data = data;
+                resolve = function () {
+                    cb(null);
+                };
+            };
+
+            var spy = sinon.spy();
+
+            user.savePassword().then(spy);
+
+            expect(_data).to.eql({ id:1, password: 'abcd' });
+
+            resolve();
+            expect(spy.calledOnce).to.be.true;
+        });
+
+        it('should fail on updating password', function () {
+            var user = new User({ id: 1, password: 'abcd', username: 'callebe' });
+
+            var resolve;
+            var _data;
+            dbMock.save = function (data, cb) {
+                _data = data;
+                resolve = function () {
+                    cb('err');
+                };
+            };
+
+            var spy = sinon.spy();
+
+            user.savePassword().catch(spy);
+
+            expect(_data).to.eql({ id:1, password: 'abcd' });
+
+            resolve();
+            expect(spy.withArgs('err').calledOnce).to.be.true;
         });
     });
 });

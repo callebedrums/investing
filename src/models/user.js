@@ -25,6 +25,13 @@ module.exports = function (Promise, db) {
         return !this.data.id;
     };
 
+    /**
+     * Insert or Update user data into database
+     * If it is an existing user, the password will be ignored.
+     * To update password use method User.prototype.savePassword()
+     *
+     * @return {Promise} - a promise that will be resolve with user instance
+     * */
     User.prototype.save = function () {
         var user = this;
         this.$promise = new Promise(function (resolve, reject) {
@@ -49,6 +56,14 @@ module.exports = function (Promise, db) {
         return this.$promise;
     };
 
+    /**
+     * It creates a new user instance with the data provided,
+     * Sets its password and save the instance
+     *
+     * @param data {Object} - User data
+     *
+     * @return {Promise} - a promise that will be resolve with user instance
+     * */
     User.save = function (data) {
         var user = new User(data);
 
@@ -62,6 +77,63 @@ module.exports = function (Promise, db) {
                 .catch(reject);
             })
             .catch(reject);
+        });
+    };
+
+    /**
+     * Loda user data from database
+     *
+     * @return {Promise} - a promise that will be resolve with user instance
+     * */
+    User.prototype.load = function () {
+        var user = this;
+
+        this.$promise = new Promise(function (resolve, reject) {
+            db.find(user.data.id, function (err, res) {
+                if (!err) {
+                    User.call(user, res);
+                    resolve(user);
+                } else {
+                    reject(err);
+                }
+
+                delete user.$promise;
+            });
+        });
+
+        return this.$promise;
+    };
+
+    /**
+     * Create a new user instance and loda user data from database
+     *
+     * @param id {PkType} - the user identifier in database
+     *
+     * @return {Promise} - a promise that will be resolve with user instance
+     * */
+    User.load = function (id) {
+        var user = new User({ id: id });
+
+        return new Promise(function (resolve, reject) {
+            user.load()
+            .then(function () {
+                resolve(user);
+            })
+            .catch(reject);
+        });
+    };
+
+    User.prototype.destroy = function () {
+        var user = this;
+
+        return new Promise(function (resolve, reject) {
+            db.destroy({ id: user.data.id }, function (err) {
+                if (!err) {
+                    resolve();
+                } else {
+                    reject(err);
+                }
+            });
         });
     };
 
@@ -81,7 +153,7 @@ module.exports = function (Promise, db) {
                                 user.data.password = hash;
                                 resolve();
                             } else {
-                                reject(err);   
+                                reject(err);
                             }
                         });
                     }
@@ -101,6 +173,23 @@ module.exports = function (Promise, db) {
                     resolve()
                 }
             });            
+        });
+    };
+
+    User.prototype.savePassword = function () {
+        var user = this;
+
+        return new Promise(function (resolve, reject) {
+            db.save({
+                id: user.data.id,
+                password: user.data.password
+            }, function (err, result) {
+                if (!err) {
+                    resolve();
+                } else {
+                    reject(err);
+                }
+            });
         });
     };
 
