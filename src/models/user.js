@@ -123,6 +123,11 @@ module.exports = function (Promise, db) {
         });
     };
 
+    /**
+     * Remove the user instance from database
+     *
+     * @return {Promise} - a promise that will be resolve when removing user
+     * */
     User.prototype.destroy = function () {
         var user = this;
 

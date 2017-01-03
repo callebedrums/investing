@@ -15,7 +15,9 @@ describe('Users Model test suite', function () {
 
     beforeEach(function () {
         dbMock = {
-            save: function () {}
+            save: function () {},
+            find: function () {},
+            destroy: function () {}
         };
 
         _user = {
@@ -300,6 +302,23 @@ describe('Users Model test suite', function () {
 
             resolve();
             expect(spy.withArgs('err').calledOnce).to.be.true;
+        });
+    });
+
+    describe('Quereing users', function () {
+        it('should load users from data base', function () {
+            var data;
+            var resolve;
+            dbMock.find = function (_data, cb) {
+                data = _data;
+                resolve = function () {
+                    cb();
+                };
+            };
+
+            var users = User.query({ name: 'callebe' });
+
+            expect(users).to.be.instanceof(Array);
         });
     });
 
