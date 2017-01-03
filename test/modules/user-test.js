@@ -361,7 +361,8 @@ describe('Users Model test suite', function () {
             });
 
             var resolve;
-            sinon.stub(bcrypt, 'hash', function (pw, salt, _cb) {
+            sinon.stub(bcrypt, 'hash', function (pw, salt, _pcb, _cb) {
+                _pcb();
                 resolve = function () {
                     _cb(null, 'encrypted');
                 };
@@ -421,7 +422,7 @@ describe('Users Model test suite', function () {
             });
 
             var resolve;
-            sinon.stub(bcrypt, 'hash', function (pw, salt, _cb) {
+            sinon.stub(bcrypt, 'hash', function (pw, salt, _pcb, _cb) {
                 resolve = function () {
                     _cb('err');
                 };

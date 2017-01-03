@@ -182,7 +182,7 @@ module.exports = function (Promise, db) {
                     if (err) {
                         reject(err);
                     } else {
-                        bcrypt.hash(password, salt, function (err, hash) {
+                        bcrypt.hash(password, salt, function () {}, function (err, hash) {
                             if (!err) {
                                 user.data.password = hash;
                                 resolve();
@@ -204,7 +204,7 @@ module.exports = function (Promise, db) {
                 if (err) {
                     reject(err);
                 } else {
-                    resolve()
+                    resolve(result);
                 }
             });            
         });
