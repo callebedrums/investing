@@ -312,13 +312,44 @@ describe('Users Model test suite', function () {
             dbMock.find = function (_data, cb) {
                 data = _data;
                 resolve = function () {
-                    cb();
+                    cb(null, [{
+                        id: 1, name: 'Callebe'
+                    }, {
+                        id: 2, name: 'Callebe 2'
+                    }]);
                 };
             };
 
+            var spy = sinon.spy();
             var users = User.query({ name: 'callebe' });
 
             expect(users).to.be.instanceof(Array);
+            expect(users.$promise).to.be.instanceof(PromiseMock);
+            expect(users).to.have.length(0);
+            expect(data).to.eql({ name: 'callebe' });
+            users.$promise.then(spy);
+
+            resolve();
+            expect(spy.withArgs(users).calledOnce).to.be.true;
+
+            expect(users).to.have.length(2);
+            expect(users[0]).to.be.instanceof(User);
+            expect(users.$promise).to.be.undefined;
+        });
+
+        it('should fail loading users', function () {
+            var resolve;
+            dbMock.find = function (data, cb) {
+                resolve = function () {
+                    cb('err');
+                };
+            };
+
+            var spy = sinon.spy();
+            User.query({ name: 'callebe' }).$promise.catch(spy);
+
+            resolve();
+            expect(spy.withArgs('err').calledOnce).to.be.true;
         });
     });
 

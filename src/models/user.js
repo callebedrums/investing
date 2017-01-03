@@ -142,6 +142,35 @@ module.exports = function (Promise, db) {
         });
     };
 
+    /**
+     * Query for users on database
+     *
+     * @return {Array.$promise} - Array to be filled with result.
+     *                            The $promise attribute is a promise that will be resolved
+     * */
+    User.query = function (data) {
+        var users = [];
+
+        users.$promise = new Promise(function (resolve, reject) {
+            db.find(data, function (err, res) {
+                if (!err) {
+                    res = res;
+                    res = res.map(function (u) {
+                        return new User(u);
+                    });
+                    Array.prototype.push.apply(users, res);
+                    resolve(users);
+                } else {
+                    reject(err);
+                }
+
+                delete users.$promise;
+            });
+        });
+
+        return users;
+    };
+
     User.prototype.setPassword = function (password) {
         var user = this;
 
