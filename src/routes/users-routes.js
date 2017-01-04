@@ -42,7 +42,7 @@ module.exports = function (app, User) {
                 })
                 .catch(function (err) {
                     res.status(500).json({
-                        message: 'error while saving user',
+                        message: 'error while listing user',
                         error: err
                     });
                 });

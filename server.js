@@ -48,10 +48,10 @@ var registerRouter = function (routes, router) {
 
 var User = require('./src/models/user')(Promise, db.users);
 
-var AuthenticationRouter = require('./src/routers/authentication-router')(app, User);
-registerRouter(AuthenticationRouter, router);
+var AuthenticationRoutes = require('./src/routes/authentication-routes')(app, User);
+registerRouter(AuthenticationRoutes, router);
 
-var UserRoutes  = require('./src/routers/users-router')(app, User);
+var UserRoutes  = require('./src/routes/users-routes')(app, User);
 registerRouter(UserRoutes, router);
 
 app.use('/api', router);
