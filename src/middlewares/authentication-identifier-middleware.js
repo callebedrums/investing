@@ -1,9 +1,10 @@
-
 var jwt = require('jsonwebtoken');
 
 module.exports = function (app, User) {
+    'use strict';
+    
     return function (req, res, next) {
-        var token = req.query.token || req.headers['authorization'];
+        var token = req.query.token || req.headers.authorization;
         
         if (token) {
             jwt.verify(token, app.get('secret'), function (err, decoded) {

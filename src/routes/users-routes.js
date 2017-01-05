@@ -2,6 +2,8 @@
 var authenticationRequiredMiddleware = require('../middlewares/authentication-required-middleware')();
 
 module.exports = function (app, User) {
+    'use strict';
+    
     return {
         "/users": {
             post: function (req, res) {

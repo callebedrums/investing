@@ -2,6 +2,8 @@
 var jwt = require('jsonwebtoken');
 
 module.exports = function () {
+    'use strict';
+    
     return function (req, res, next) {
         if (req.user) {
             next();

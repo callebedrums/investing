@@ -2,6 +2,8 @@
 var jwt = require('jsonwebtoken');
 
 module.exports = function (app, User) {
+    'use strict';
+    
     return {
         "/authenticate": {
             // authentication endpoint that require a json containing username and password

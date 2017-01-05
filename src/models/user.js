@@ -3,6 +3,7 @@ var _       = require('lodash');
 var bcrypt  = require('bcrypt-nodejs');
 
 module.exports = function (Promise, db) {
+    'use strict';
 
     var User = function (data) {
         this.data = {};
