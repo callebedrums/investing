@@ -14,7 +14,11 @@ module.exports = function (app, User) {
                         req.user = user;
                         next();
                     }).catch(function () {
-                        next();
+                        // not able to load user
+                        return res.status(403).json({
+                            status: 'error',
+                            message: 'unable to load user data'
+                        });
                     });
                 } else {
                     // if the token is invalid, reject the call
