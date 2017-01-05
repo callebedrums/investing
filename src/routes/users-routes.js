@@ -1,5 +1,5 @@
 
-var authenticatedMiddleware = require('../middlewares/authenticated-middleware');
+var authenticationRequiredMiddleware = require('../middlewares/authentication-required-middleware')();
 
 module.exports = function (app, User) {
     return {
@@ -31,7 +31,7 @@ module.exports = function (app, User) {
                     });
                 });
             },
-            get: [authenticatedMiddleware(app, User), function (req, res) {
+            get: [authenticationRequiredMiddleware, function (req, res) {
 
                 User.query().$promise.then(function (users) {
                     users = users.map(function (user) {

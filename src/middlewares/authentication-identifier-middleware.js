@@ -17,6 +17,7 @@ module.exports = function (app, User) {
                         next();
                     });
                 } else {
+                    // if the token is invalid, reject the call
                     return res.status(403).json({
                         status: 'error',
                         message: 'invalid token'
@@ -24,10 +25,8 @@ module.exports = function (app, User) {
                 }
             });
         } else {
-            return res.status(403).json({
-                status: 'error',
-                message: 'the request is not authenticated'
-            });
+            // if there is no token, go next as anonymous
+            next();
         }
     };
 };

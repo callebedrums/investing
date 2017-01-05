@@ -31,7 +31,6 @@ router.get('/', function (req, res) {
     res.json({ message: "hellow world!" });
 });
 
-
 var registerRouter = function (routes, router) {
     for(var path in routes) {
         if (routes.hasOwnProperty(path)) {
@@ -48,14 +47,25 @@ var registerRouter = function (routes, router) {
 
 var User = require('./src/models/user')(Promise, db.users);
 
+// adding middleware to identify the logged in user
+var authenticationIdentifierMiddleware = require('./src/middlewares/authentication-identifier-middleware');
+router.use(authenticationIdentifierMiddleware(app, User));
+
+
+// adding routes to handle authentication proccess
 var AuthenticationRoutes = require('./src/routes/authentication-routes')(app, User);
 registerRouter(AuthenticationRoutes, router);
 
+
+// adding routes to manage users
 var UserRoutes  = require('./src/routes/users-routes')(app, User);
 registerRouter(UserRoutes, router);
 
+
+// registering the routes on app
 app.use('/api', router);
 
+// starting listening
 app.listen(port, function () {
     console.log('listening on port', port)
 });
