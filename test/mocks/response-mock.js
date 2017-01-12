@@ -5,6 +5,9 @@ var response = {
     },
     json: function () {
         return this;
+    },
+    set: function () {
+        return this;
     }
 };
 

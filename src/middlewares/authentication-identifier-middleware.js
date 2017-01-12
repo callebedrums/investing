@@ -1,13 +1,13 @@
 var jwt = require('jsonwebtoken');
 
-module.exports = function (app, User) {
+module.exports = function (User) {
     'use strict';
     
     return function (req, res, next) {
         var token = req.query.token || req.headers.authorization;
         
         if (token) {
-            jwt.verify(token, app.get('secret'), function (err, decoded) {
+            jwt.verify(token, req.app.get('secret'), function (err, decoded) {
                 if (!err) {
                     // expose the decoded data from token to the next routes
                     req.decoded = decoded;

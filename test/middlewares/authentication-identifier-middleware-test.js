@@ -33,9 +33,14 @@ describe('AuthenticationIdentifier Middleware test suite', function () {
     var reject;
 
     beforeEach(function () {
-        req = { headers: {}, query: {} };
         app = {
             get: sinon.spy(function () { return 'abc' })
+        };
+
+        req = { 
+            headers: {},
+            query: {},
+            app: app
         };
 
         next = sinon.spy();
@@ -57,7 +62,7 @@ describe('AuthenticationIdentifier Middleware test suite', function () {
             reject = rej;
         });
 
-        authenticationIdentifierMiddleware = authenticationIdentifierMiddlewareConstructor(app, User);
+        authenticationIdentifierMiddleware = authenticationIdentifierMiddlewareConstructor(User);
     });
 
     afterEach(function () {

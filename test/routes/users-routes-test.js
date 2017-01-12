@@ -28,9 +28,15 @@ describe('Users router test suite', function () {
 
     beforeEach(function () {
         User = userConstructor({}, {});
-        routes = userRoutes({}, User);
+        routes = userRoutes(User);
 
-        request = { body: {} };
+        request = {
+            body: {},
+            app: {
+                get: function () { }
+            },
+            get: function () {}
+        };
 
         statusSpy = sinon.spy(responseMock, 'status');
         jsonSpy = sinon.spy(responseMock, 'json');
@@ -148,6 +154,37 @@ describe('Users router test suite', function () {
 
             expect(jsonSpy.calledOnce).to.be.true;
             expect(user.toJS.calledTwice).to.be.true;
+        });
+
+        it('sould count users when paginating', function () {
+            var res, rej;
+
+            var countPromise = new PromiseMock(function (_res, _rej) {
+                res = _res;
+                rej = _rej;
+            });
+
+
+            var paginationStub = sinon.stub(request.app, 'get').returns({
+                enabled: true,
+                size: 2
+            });
+
+            UserMock.expects('count').returns(countPromise);
+            UserMock.expects('query').returns({$promise:promise});
+
+            route(request, responseMock);
+
+            res(7);
+
+            UserMock.verify();
+
+            var user = { toJS: sinon.spy() };
+            resolve([user, user]);
+
+            //UserMock.expects('query').returns({$promise:promise});
+
+            paginationStub.restore();
         });
 
         it('should fail on listing users', function () {

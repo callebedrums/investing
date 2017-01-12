@@ -1,7 +1,8 @@
 
 var authenticationRequiredMiddleware = require('../middlewares/authentication-required-middleware')();
+var paginationHelper = require('../helpers/pagination-helper')();
 
-module.exports = function (app, User) {
+module.exports = function (User) {
     'use strict';
     
     return {
@@ -34,20 +35,52 @@ module.exports = function (app, User) {
                 });
             },
             get: [authenticationRequiredMiddleware, function (req, res) {
+                var data = req.query || {};
+                var pagination = req.app.get('pagination') || {};
 
-                User.query().$promise.then(function (users) {
-                    users = users.map(function (user) {
-                        return user.toJS();
-                    });
+                var options = {};
 
-                    res.json(users);
-                })
-                .catch(function (err) {
+                var setPaginationHeaders = function () {};
+
+                var error = function (err) {
                     res.status(500).json({
                         message: 'error while listing user',
                         error: err
                     });
-                });
+                };
+
+                var query = function () {
+                    User.query(data, options).$promise.then(function (users) {
+                        users = users.map(function (user) {
+                            return user.toJS();
+                        });
+
+                        setPaginationHeaders();
+
+                        res.json(users);
+                    })
+                    .catch(error);
+                };
+
+                if (pagination.enabled) {
+                    var page = parseInt(req.get('x-pagination-page'), 10) || 0;
+                    var size = parseInt(req.get('x-pagination-page-size'), 10) || pagination.size;
+
+                    options.offset = size * page;
+                    options.limit = size;
+
+                    User.count(data).then(function (count) {
+                        setPaginationHeaders = function () {
+                            // calculate total of pages, next and previous pages and fill the headers
+                            res.set(paginationHelper.getResponseHeaders(page, size, count));
+                        }
+
+                        query();
+                    }).catch(error);
+                } else {
+                    query();
+                }
+                
             }]
         },
         "/users/:id": {

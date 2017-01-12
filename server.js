@@ -13,6 +13,7 @@ var config = require('./config');
 
 var db = massive.connectSync({connectionString : config.database});
 
+app.set('pagination', config.pagination);
 app.set('secret', config.secret);
 app.set('db', db);
 
@@ -23,7 +24,20 @@ app.use(bodyParser.json());
 app.use(morgan('dev'));
 
 // enable cors
-app.use(cors());
+app.use(cors({
+    allowedHeaders: [
+        'content-type',
+        'x-pagination-page',
+        'x-pagination-page-size'
+    ],
+    exposedHeaders: [
+        'x-pagination-page',
+        'x-pagination-page-size',
+        'x-pagination-total-pages',
+        'x-pagination-next',
+        'x-pagination-previous'
+    ]
+}));
 
 var router = express.Router();
 
@@ -49,16 +63,16 @@ var User = require('./src/models/user')(Promise, db.users);
 
 // adding middleware to identify the logged in user
 var authenticationIdentifierMiddleware = require('./src/middlewares/authentication-identifier-middleware');
-router.use(authenticationIdentifierMiddleware(app, User));
+router.use(authenticationIdentifierMiddleware(User));
 
 
 // adding routes to handle authentication proccess
-var AuthenticationRoutes = require('./src/routes/authentication-routes')(app, User);
+var AuthenticationRoutes = require('./src/routes/authentication-routes')(User);
 registerRouter(AuthenticationRoutes, router);
 
 
 // adding routes to manage users
-var UserRoutes  = require('./src/routes/users-routes')(app, User);
+var UserRoutes  = require('./src/routes/users-routes')(User);
 registerRouter(UserRoutes, router);
 
 

@@ -1,7 +1,7 @@
 
 var jwt = require('jsonwebtoken');
 
-module.exports = function (app, User) {
+module.exports = function (User) {
     'use strict';
     
     return {
@@ -24,7 +24,7 @@ module.exports = function (app, User) {
                                 var token = jwt.sign({
                                     id: user.data.id,
                                     username: user.data.username
-                                }, app.get('secret'), {
+                                }, req.app.get('secret'), {
                                     expiresIn: 24 * 60 * 60  // expires in 24 hours
                                 });
 
