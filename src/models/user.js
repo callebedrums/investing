@@ -13,6 +13,9 @@ module.exports = function (Promise, db) {
         _.extend(this.data, data);
     };
 
+    /**
+     * Returns the User data as a JS object
+     * */
     User.prototype.toJS = function () {
         var obj = {};
         _.extend(obj, this.data);
@@ -22,6 +25,10 @@ module.exports = function (Promise, db) {
         return obj;
     };
 
+    /**
+     * Checks if the instance is a new instance.
+     * It means, if the instance has an id.
+     * */
     User.prototype.isNew = function () {
         return !this.data.id;
     };
@@ -149,11 +156,14 @@ module.exports = function (Promise, db) {
      * @return {Array.$promise} - Array to be filled with result.
      *                            The $promise attribute is a promise that will be resolved
      * */
-    User.query = function (data) {
+    User.query = function (data, options) {
         var users = [];
 
+        data = data || {};
+        options = options || {};
+
         users.$promise = new Promise(function (resolve, reject) {
-            db.find(data, function (err, res) {
+            db.find(data, options, function (err, res) {
                 if (!err) {
                     res = res;
                     res = res.map(function (u) {
@@ -170,6 +180,22 @@ module.exports = function (Promise, db) {
         });
 
         return users;
+    };
+
+    /**
+     * Count all users filtered by data
+     * */
+    User.count = function (data) {
+        data = data || {};
+        return new Promise(function (resolve, reject) {
+            db.count(data, function (err, res) {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(res);
+                }
+            });
+        });
     };
 
     User.prototype.setPassword = function (password) {

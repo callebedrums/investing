@@ -17,7 +17,8 @@ describe('Users Model test suite', function () {
         dbMock = {
             save: function () {},
             find: function () {},
-            destroy: function () {}
+            destroy: function () {},
+            count: function () {}
         };
 
         _user = {
@@ -309,7 +310,7 @@ describe('Users Model test suite', function () {
         it('should load users from data base', function () {
             var data;
             var resolve;
-            dbMock.find = function (_data, cb) {
+            dbMock.find = function (_data, _opt, cb) {
                 data = _data;
                 resolve = function () {
                     cb(null, [{
@@ -339,16 +340,49 @@ describe('Users Model test suite', function () {
 
         it('should fail loading users', function () {
             var resolve;
-            dbMock.find = function (data, cb) {
+            dbMock.find = function (data, _opt, cb) {
                 resolve = function () {
                     cb('err');
                 };
             };
 
             var spy = sinon.spy();
-            User.query({ name: 'callebe' }).$promise.catch(spy);
+            User.query().$promise.catch(spy);
 
             resolve();
+            expect(spy.withArgs('err').calledOnce).to.be.true;
+        });
+    });
+
+    describe('Counting users', function () {
+        it('should count users', function () {
+            var resolve;
+            dbMock.count = function (_data, cb) {
+                resolve = cb;
+            };
+
+            var spy = sinon.spy();
+            var promise = User.count();
+
+            expect(promise).to.be.instanceof(PromiseMock);
+            promise.then(spy);
+
+            resolve(null, 1);
+
+            expect(spy.withArgs(1).calledOnce).to.be.true;
+        });
+
+        it('should fail when counting users', function () {
+            var resolve;
+            dbMock.count = function (_data, cb) {
+                resolve = cb;
+            };
+            var spy = sinon.spy();
+
+            User.count().catch(spy);
+
+            resolve('err');
+
             expect(spy.withArgs('err').calledOnce).to.be.true;
         });
     });
