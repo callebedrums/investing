@@ -345,4 +345,20 @@ describe('Users router test suite', function () {
             expect(jsonSpy.withArgs(sinon.match({message: 'error while deleting user data', error: 'err'})).calledOnce).to.be.true;
         });
     });
+
+    describe('GET /users/me', function () {
+        beforeEach(function () {
+            route = routes['/users/me'].get;
+        });
+
+        it('should return the logged in user data', function () {
+            var user = { toJS: sinon.spy() };
+            request.user = user;
+
+            route(request, responseMock);
+
+            expect(user.toJS.calledOnce).to.be.true;
+            expect(jsonSpy.calledOnce).to.be.true;
+        });
+    });
 });

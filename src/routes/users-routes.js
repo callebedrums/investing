@@ -129,6 +129,12 @@ module.exports = function (User) {
                     });
                 });
             }
+        },
+        "/users/me": {
+            all: [authenticationRequiredMiddleware],
+            get: function (req, res) {
+                res.json(req.user.toJS());
+            }
         }
     };
 };
