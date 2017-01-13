@@ -8,6 +8,10 @@ exports.up = function(pgm) {
             type: 'character varying(64)',
             unique: true
         },
+        'email': {
+            type: 'character varying(256)',
+            unique: true
+        },
         'password': 'character varying(256)',
         'data': 'jsonb'
     });
