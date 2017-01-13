@@ -8,6 +8,9 @@ var response = {
     },
     set: function () {
         return this;
+    },
+    end: function () {
+        
     }
 };
 

@@ -1,4 +1,3 @@
-
 var sinon           = require('sinon');
 var chai            = require('chai');
 var PromiseMock     = require('../mocks/promise-mock');
@@ -19,6 +18,7 @@ describe('Users router test suite', function () {
 
     var statusSpy;
     var jsonSpy;
+    var endSpy;
 
     var UserMock;
 
@@ -40,6 +40,7 @@ describe('Users router test suite', function () {
 
         statusSpy = sinon.spy(responseMock, 'status');
         jsonSpy = sinon.spy(responseMock, 'json');
+        endSpy = sinon.spy(responseMock, 'end');
 
         UserMock = sinon.mock(User);
 
@@ -53,6 +54,7 @@ describe('Users router test suite', function () {
         statusSpy.restore();
         jsonSpy.restore();
         UserMock.restore();
+        endSpy.restore();
     });
 
     describe('POST /users', function () {
@@ -199,5 +201,148 @@ describe('Users router test suite', function () {
             expect(statusSpy.withArgs(500).calledOnce).to.be.true;
             expect(jsonSpy.withArgs(sinon.match({message: 'error while listing user', error: 'err'})).calledOnce).to.be.true;
         });
-    })
+    });
+
+    describe('ALL /user/:id', function () {
+        beforeEach(function () {
+            route = routes['/users/:id'].all[1];
+        });
+
+        it('sould return the user', function () {
+            var spy = sinon.spy();
+            UserMock.expects('load').withArgs(1).returns(promise);
+
+            request.params = { id: 1 };
+
+            route(request, responseMock, spy);
+
+            UserMock.verify();
+
+            var user = { };
+
+            resolve(user);
+
+            expect(spy.calledOnce).to.be.true;
+            expect(request.object).to.equal(user);
+        });
+
+        it('should fail loading user', function () {
+            UserMock.expects('load').returns(promise);
+
+            request.params = { id: 1 };
+
+            route(request, responseMock);
+
+            UserMock.verify();
+
+            reject('err');
+
+            expect(statusSpy.withArgs(404).calledOnce).to.be.true;
+            expect(jsonSpy.withArgs(sinon.match({message: 'user not found', error: 'err'})).calledOnce).to.be.true;
+        });
+    });
+
+    describe('GET /user/:id', function () {
+        beforeEach(function () {
+            route = routes['/users/:id'].get;
+        });
+
+        it('should load user data', function () {
+            request.object = { toJS: sinon.spy() };
+
+            route(request, responseMock);
+
+            expect(request.object.toJS.calledOnce).to.be.true;
+            expect(jsonSpy.calledOnce).to.be.true;
+        });
+    });
+
+    describe('PUT /user/:id', function () {
+        beforeEach(function () {
+            route = routes['/users/:id'].put;
+        });
+
+        it('should update user data', function () {
+            var user = {
+                data: {
+                    id: 1,
+                    name: '123'
+                },
+                toJS: sinon.spy(),
+                save: sinon.stub()
+            };
+            user.save.returns(promise);
+
+            request.object = user;
+            request.body = {
+                id: 2,
+                name: '456'
+            };
+
+            route(request, responseMock);
+
+            expect(user.data.id).to.equal(1);
+            expect(user.data.name).to.equal('456');
+            expect(user.save.calledOnce).to.be.true;
+
+            resolve(user);
+
+            expect(user.toJS.calledOnce).to.be.true;
+            expect(jsonSpy.calledOnce).to.be.true;
+        });
+
+        it('should fail to update user data', function () {
+            var user = {
+                data: { id: 1 },
+                save: sinon.stub()
+            };
+            user.save.returns(promise);
+
+            request.object = user;
+            request.body = {};
+
+            route(request, responseMock);
+
+            reject('err');
+
+            expect(statusSpy.withArgs(500).calledOnce).to.be.true;
+            expect(jsonSpy.withArgs(sinon.match({message: 'error while updating user data', error: 'err'})).calledOnce).to.be.true;
+        });
+    });
+
+    describe('DELETE /user/:id', function () {
+        beforeEach(function () {
+            route = routes['/users/:id'].delete;
+        });
+
+        it('should delete user', function () {
+            var user = { destroy: sinon.stub() };
+            user.destroy.returns(promise);
+
+            request.object = user;
+
+            route(request, responseMock);
+
+            expect(user.destroy.calledOnce).to.be.true;
+
+            resolve();
+
+            expect(statusSpy.withArgs(204).calledOnce).to.be.true;
+            expect(endSpy.calledOnce).to.be.true;
+        });
+
+        it('should fail while deleting user', function () {
+            var user = { destroy: sinon.stub() };
+            user.destroy.returns(promise);
+
+            request.object = user;
+
+            route(request, responseMock);
+
+            reject('err');
+
+            expect(statusSpy.withArgs(500).calledOnce).to.be.true;
+            expect(jsonSpy.withArgs(sinon.match({message: 'error while deleting user data', error: 'err'})).calledOnce).to.be.true;
+        });
+    });
 });

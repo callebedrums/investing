@@ -1,4 +1,4 @@
-
+var _ = require('lodash');
 var authenticationRequiredMiddleware = require('../middlewares/authentication-required-middleware')();
 var paginationHelper = require('../helpers/pagination-helper')();
 
@@ -80,11 +80,55 @@ module.exports = function (User) {
                 } else {
                     query();
                 }
-                
             }]
         },
         "/users/:id": {
+            all: [authenticationRequiredMiddleware, function (req, res, next) {
+                var id = parseInt(req.params.id, 10);
 
+                User.load(id).then(function (user) {
+                    req.object = user;
+                    next();
+                })
+                .catch(function (err) {
+                    res.status(404).json({
+                        message: 'user not found',
+                        error: err
+                    });
+                });
+            }],
+            get: function (req, res) {
+                res.json(req.object.toJS());
+            },
+            put: function (req, res) {
+                var user = req.object;
+                var data = req.body;
+
+                delete data.id;
+
+                _.extend(user.data, data);
+
+                user.save().then(function (user) {
+                    res.json(user.toJS());
+                })
+                .catch(function (err) {
+                    res.status(500).json({
+                        message: 'error while updating user data',
+                        error: 'err'
+                    });
+                });
+            },
+            delete: function (req, res) {
+                req.object.destroy().then(function () {
+                    res.status(204).end();
+                })
+                .catch(function (err) {
+                    res.status(500).json({
+                        message: 'error while deleting user data',
+                        error: 'err'
+                    });
+                });
+            }
         }
     };
 };

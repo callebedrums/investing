@@ -98,7 +98,7 @@ module.exports = function (Promise, db) {
 
         this.$promise = new Promise(function (resolve, reject) {
             db.find(user.data.id, function (err, res) {
-                if (!err) {
+                if (!err && res) {
                     User.call(user, res);
                     resolve(user);
                 } else {
